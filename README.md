@@ -62,7 +62,7 @@ listen at a time; **Listen to Modo** toggles it.
 /modo                        default prim, metres, Y up
   /Group_A                   Xform per Modo item (locators, groups, meshes)
     /Box                     Xform with the item's local transform
-      /Box                   Mesh: SubD -> catmullClark, faces -> none
+      /Box                   Mesh: SubD/PSub -> catmullClark, faces -> none
       /Box_faces             only when a mesh mixes SubD and plain faces
         mat_Red_Paint        GeomSubset, family materialBind -> /materials/Red_Paint
         part_Lid             GeomSubset, family part
@@ -93,6 +93,15 @@ attributes, and in each subset's and material's `modo:tag` custom data.
 * **Normals** come from Modo, so they follow each material's smoothing
   angle, and a vertex normal map wins when there is one. SubD meshes get none;
   the renderer subdivides them.
+* **SubD vs PSub:** USD and Houdini subdivide with OpenSubdiv
+  Catmull-Clark, which is Modo's **PSub**. PSub meshes, including their edge
+  and vertex weights (weight × 10 = sharpness, 100% = infinitely sharp),
+  come out identical. Modo's own **SubD** is a different scheme. The
+  same cage shrinks less in Houdini (a unit cube at level 2: corners at
+  0.255 vs 0.236 in Modo), and edge weights below 100% are much softer in
+  Modo (50% there is closer to sharpness 0–1 than to 5). Convert to PSub
+  (Shift+Tab) for an exact match. The Event Log says when a send contains
+  SubD polygons.
 * **Hidden items** (eye off) are sent as invisible.
 * Meshes are sent evaluated at the current frame, with mesh operations and
   deformers applied.
@@ -101,10 +110,8 @@ attributes, and in each subset's and material's `modo:tag` custom data.
 
 ## Not yet
 
-* Edge-weight → crease sharpness is linear (100% → 10, which USD treats as
-  infinitely sharp) and hasn't been compared against Modo renders. Modo SubD
-  and PSub boundary and UV interpolation rules are not mapped; USD defaults
-  are used.
+* Modo SubD (not PSub) shapes are only approximated, see above. Boundary
+  and UV interpolation rules are not mapped; USD defaults are used.
 * Not sent yet: mesh instances, replicators, static meshes, curves, cameras,
   lights, animation, morphs, textures, vertex/edge selection sets.
 * Speed: about 2.5 s to read and 1 s to write 131k faces (Modo 16). Reading
@@ -119,8 +126,9 @@ Please open an issue with:
 * the Modo Event Log line starting with `Houdini bridge:`, and any
   `Modo Bridge:` lines or errors in Houdini's console
 
-Things to look at in particular: SubD edge weights (creases) and hard-surface
-smoothing compared with Modo, heavy meshes, and Windows/macOS installs.
+Things to look at in particular: open boundaries and UV seams on PSub
+meshes, hard-surface smoothing compared with Modo, heavy meshes, and
+Windows/macOS installs.
 
 ## Tests
 

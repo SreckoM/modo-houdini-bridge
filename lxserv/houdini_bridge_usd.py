@@ -68,7 +68,10 @@ MATERIALS = '/materials'
 DEFAULT_TAG = 'Default'
 
 # Modo edge/vertex weights run 0..1 (100%); USD sharpness 10 is infinitely
-# sharp. Linear in between -- an approximation, not matched against Modo.
+# sharp. For PSub this is exact: frozen Modo 17.1 PSub cubes matched
+# OpenSubdiv in Houdini to 1e-7 for edge weights 0.05-0.25 (sharpness
+# 0.5-2.5) and a 10% corner weight (sharpness 1). Modo's own SubD is a
+# different scheme, so SubD meshes only come close.
 SHARPNESS_SCALE = 10.0
 
 

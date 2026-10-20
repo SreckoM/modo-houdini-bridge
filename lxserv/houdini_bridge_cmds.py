@@ -327,6 +327,7 @@ def read_mesh(mesh, notes, label):
     colors = [[] for _ in rgb_maps]
     normals = []
     skipped = 0
+    legacy = 0
 
     def tag(kind):
         try:
@@ -346,6 +347,7 @@ def read_mesh(mesh, notes, label):
         faces.append([index_of[p] for p in ids])
         smooth = kind != 'FACE'
         subd.append(smooth)
+        legacy += kind == 'SUBD'
         mats.append(tag(lx.symbol.i_PTAG_MATR))
         part = tag(lx.symbol.i_PTAG_PART)
         parts.append('' if part == 'Default' else part)  # Modo's "no part"
@@ -397,6 +399,10 @@ def read_mesh(mesh, notes, label):
 
     if skipped:
         notes.append('%s: skipped %d curve/line polygon(s)' % (label, skipped))
+    if legacy:
+        notes.append('%s: %d SubD polygon(s) become Catmull-Clark in Houdini, '
+                     'which shrinks the cage less than Modo SubD; convert to '
+                     'PSub for an exact match' % (label, legacy))
     return {
         'points': points, 'faces': faces, 'subd': subd,
         'material': mats, 'part': parts, 'sets': sets,
