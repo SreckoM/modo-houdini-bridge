@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <toolshelf name="modo_bridge" label="Modo Bridge">
+    <memberTool name="modo_bridge_lop"/>
+    <memberTool name="modo_bridge_sop"/>
+    <memberTool name="modo_bridge_reload"/>
+    <memberTool name="modo_bridge_listen"/>
+  </toolshelf>
+
+  <tool name="modo_bridge_lop" label="Modo Stage" icon="LOP_sublayer">
+    <helpText><![CDATA[Adds a Sublayer LOP in /stage that reads the file Modo sends. Put lights, materials and render settings after it.]]></helpText>
+    <script scriptType="python"><![CDATA[
+import modo_bridge
+node = modo_bridge.create_lop()
+node.setSelected(True, clear_all_selected=True)
+modo_bridge.start_listener()
+]]></script>
+  </tool>
+
+  <tool name="modo_bridge_sop" label="Modo Geometry" icon="SOP_usdimport">
+    <helpText><![CDATA[Adds a Geometry object with the Modo meshes as polygons. Material tags, parts and selection sets become groups (mat_*, part_*, set_*).]]></helpText>
+    <script scriptType="python"><![CDATA[
+import modo_bridge
+node = modo_bridge.create_sop()
+node.setSelected(True, clear_all_selected=True)
+modo_bridge.start_listener()
+]]></script>
+  </tool>
+
+  <tool name="modo_bridge_reload" label="Reload Modo" icon="BUTTONS_reload">
+    <helpText><![CDATA[Reloads every node that reads the Modo file.]]></helpText>
+    <script scriptType="python"><![CDATA[
+import modo_bridge
+n = modo_bridge.reload_file()
+hou.ui.setStatusMessage('Modo Bridge: reloaded %d node(s)' % n)
+]]></script>
+  </tool>
+
+  <tool name="modo_bridge_listen" label="Listen to Modo" icon="NETWORKS_lop">
+    <helpText><![CDATA[Starts or stops listening for Modo's Send to Houdini.]]></helpText>
+    <script scriptType="python"><![CDATA[
+import modo_bridge
+if modo_bridge.is_listening():
+    modo_bridge.stop_listener()
+    hou.ui.setStatusMessage('Modo Bridge: not listening')
+elif modo_bridge.start_listener():
+    hou.ui.setStatusMessage('Modo Bridge: listening on port %d' % modo_bridge.PORT)
+else:
+    hou.ui.setStatusMessage('Modo Bridge: port %d is busy' % modo_bridge.PORT,
+                            severity=hou.severityType.Warning)
+]]></script>
+  </tool>
+</shelfDocument>
